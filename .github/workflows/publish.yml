@@ -49,15 +49,15 @@ jobs:
 
       - name: List Files
         shell: bash
-        run: ls -R ./AssetRipper.NativeDialogs.Example/Release/
+        run: ls -R ./AssetRipper.NativeDialogs.Example/bin/Release/
         
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Example_${{ matrix.config.name }}
           path: |
-            ./AssetRipper.NativeDialogs.Example/Release/net9.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
-            ./AssetRipper.NativeDialogs.Example/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dll
-            ./AssetRipper.NativeDialogs.Example/Release/net9.0/${{ matrix.config.runtime }}/publish/*.so
-            ./AssetRipper.NativeDialogs.Example/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dylib
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dll
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.so
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dylib
           if-no-files-found: error
