@@ -32,7 +32,7 @@ internal static class Program
 		}
 		else if (arguments.OpenFolder)
 		{
-			string? folder = null;
+			string? folder = await OpenFolderDialog.OpenFolderAsync();
 			Print(folder);
 		}
 		else if (arguments.SaveFile)
