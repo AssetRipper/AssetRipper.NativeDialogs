@@ -12,6 +12,10 @@ internal sealed partial class Arguments
 	public bool OpenFile { get; set; } = false;
 
 	[CommandLineArgument]
+	[Description("Show the open file dialog and allow multiple files.")]
+	public bool OpenFiles { get; set; } = false;
+
+	[CommandLineArgument]
 	[Description("Show the open folder dialog.")]
 	public bool OpenFolder { get; set; } = false;
 
