@@ -90,7 +90,7 @@ public static class OpenFileDialog
 	[SupportedOSPlatform("macos")]
 	private static Task<string?> OpenFileAsyncMacOS(OpenFileDialogOptions options)
 	{
-		return Task.FromResult(ProcessExecutor.TryRun("osascript", "-e 'POSIX path of (choose file)"));
+		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose file)");
 	}
 
 	[SupportedOSPlatform("linux")]
