@@ -1,5 +1,4 @@
-﻿using AppKit;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -91,20 +90,7 @@ public static class OpenFileDialog
 	[SupportedOSPlatform("macos")]
 	private static Task<string?> OpenFileAsyncMacOS(OpenFileDialogOptions options)
 	{
-		NSApplication.Init();
-
-		using NSOpenPanel panel = NSOpenPanel.OpenPanel;
-		panel.CanChooseFiles = true;
-		panel.CanChooseDirectories = false;
-		panel.AllowsMultipleSelection = false;
-
-		// Show modally – no need to start a full run‑loop for a simple picker
-		if (panel.RunModal() == (int)NSModalResponse.OK)
-		{
-			return Task.FromResult(panel.Url?.Path);
-		}
-
-		return Task.FromResult<string?>(null);
+		return Task.FromResult(ProcessExecutor.TryRun("osascript", "-e 'POSIX path of (choose file)"));
 	}
 
 	[SupportedOSPlatform("linux")]
