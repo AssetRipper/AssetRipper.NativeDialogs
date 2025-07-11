@@ -4,7 +4,7 @@ namespace AssetRipper.NativeDialogs;
 
 internal static class ProcessExecutor
 {
-	public static async Task<string?> TryRun(string command, params ReadOnlySpan<string> arguments)
+	public static Task<string?> TryRun(string command, params ReadOnlySpan<string> arguments)
 	{
 		Process p = new()
 		{
@@ -18,13 +18,20 @@ internal static class ProcessExecutor
 		{
 			p.StartInfo.ArgumentList.Add(arg);
 		}
-		if (!p.Start())
-		{
-			return null;
-		}
+		return TryRunProcess(p);
 
-		string? path = p.StandardOutput.ReadLine();
-		await p.WaitForExitAsync();
-		return p.ExitCode == 0 ? path : null;
+		static async Task<string?> TryRunProcess(Process process)
+		{
+			if (!process.Start())
+			{
+				return null;
+			}
+
+			string? path = process.StandardOutput.ReadLine();
+
+			await process.WaitForExitAsync();
+
+			return process.ExitCode == 0 ? path : null;
+		}
 	}
 }
