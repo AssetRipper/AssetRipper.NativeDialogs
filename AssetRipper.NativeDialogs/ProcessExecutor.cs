@@ -12,6 +12,7 @@ internal static class ProcessExecutor
 			{
 				FileName = command,
 				RedirectStandardOutput = true,
+				RedirectStandardError = true,
 			},
 		};
 		foreach (string arg in arguments)
