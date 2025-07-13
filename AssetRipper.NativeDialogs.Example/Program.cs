@@ -37,7 +37,7 @@ internal static class Program
 		}
 		else if (arguments.SaveFile)
 		{
-			string? file = null;
+			string? file = await SaveFileDialog.SaveFileAsync();
 			Print(file);
 		}
 		else if (arguments.Message)
