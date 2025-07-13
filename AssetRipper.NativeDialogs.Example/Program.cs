@@ -17,7 +17,7 @@ internal static class Program
 		}
 		else if (arguments.OpenFiles)
 		{
-			string[]? files = await OpenFilesDialog.OpenFilesAsync();
+			string[]? files = await OpenFileDialog.OpenFilesAsync();
 			if (files is null || files.Length == 0)
 			{
 				Console.WriteLine("No files selected.");
