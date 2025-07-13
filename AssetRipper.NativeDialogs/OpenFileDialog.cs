@@ -210,7 +210,7 @@ public static class OpenFileDialog
 	private static async Task<string[]?> OpenFilesAsyncLinux()
 	{
 		// Todo: proper Linux implementation
-		string? path = await OpenFileDialog.OpenFileAsync();
+		string? path = await OpenFileAsync();
 		if (string.IsNullOrEmpty(path))
 		{
 			return null; // User canceled the dialog

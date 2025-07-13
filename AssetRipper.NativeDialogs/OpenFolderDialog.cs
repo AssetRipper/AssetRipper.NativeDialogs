@@ -46,4 +46,60 @@ public static class OpenFolderDialog
 	{
 		return Task.FromResult<string?>(null);
 	}
+
+	public static Task<string[]?> OpenFoldersAsync()
+	{
+		if (OperatingSystem.IsWindows())
+		{
+			return OpenFoldersAsyncWindows();
+		}
+		else if (OperatingSystem.IsMacOS())
+		{
+			return OpenFoldersAsyncMacOS();
+		}
+		else if (OperatingSystem.IsLinux())
+		{
+			return OpenFoldersAsyncLinux();
+		}
+		else
+		{
+			return Task.FromResult<string[]?>(null);
+		}
+	}
+
+	[SupportedOSPlatform("windows")]
+	private static async Task<string[]?> OpenFoldersAsyncWindows()
+	{
+		// Todo: proper Windows implementation
+		string? path = await OpenFolderAsync();
+		if (string.IsNullOrEmpty(path))
+		{
+			return null; // User canceled the dialog
+		}
+		return [path];
+	}
+
+	[SupportedOSPlatform("macos")]
+	private static async Task<string[]?> OpenFoldersAsyncMacOS()
+	{
+		// Todo: proper Mac implementation
+		string? path = await OpenFolderAsync();
+		if (string.IsNullOrEmpty(path))
+		{
+			return null; // User canceled the dialog
+		}
+		return [path];
+	}
+
+	[SupportedOSPlatform("linux")]
+	private static async Task<string[]?> OpenFoldersAsyncLinux()
+	{
+		// Todo: proper Linux implementation
+		string? path = await OpenFolderAsync();
+		if (string.IsNullOrEmpty(path))
+		{
+			return null; // User canceled the dialog
+		}
+		return [path];
+	}
 }

@@ -12,28 +12,49 @@ internal static class Program
 
 		if (arguments.OpenFile)
 		{
-			string? file = await OpenFileDialog.OpenFileAsync();
-			Print(file);
-		}
-		else if (arguments.OpenFiles)
-		{
-			string[]? files = await OpenFileDialog.OpenFilesAsync();
-			if (files is null || files.Length == 0)
+			if (arguments.AllowMultiple)
 			{
-				Console.WriteLine("No files selected.");
+				string[]? files = await OpenFileDialog.OpenFilesAsync();
+				if (files is null || files.Length == 0)
+				{
+					Console.WriteLine("No files selected.");
+				}
+				else
+				{
+					foreach (string file in files)
+					{
+						Print(file);
+					}
+				}
 			}
 			else
 			{
-				foreach (string file in files)
-				{
-					Print(file);
-				}
+				string? file = await OpenFileDialog.OpenFileAsync();
+				Print(file);
 			}
 		}
 		else if (arguments.OpenFolder)
 		{
-			string? folder = await OpenFolderDialog.OpenFolderAsync();
-			Print(folder);
+			if (arguments.AllowMultiple)
+			{
+				string[]? folders = await OpenFolderDialog.OpenFoldersAsync();
+				if (folders is null || folders.Length == 0)
+				{
+					Console.WriteLine("No folders selected.");
+				}
+				else
+				{
+					foreach (string file in folders)
+					{
+						Print(file);
+					}
+				}
+			}
+			else
+			{
+				string? folder = await OpenFolderDialog.OpenFolderAsync();
+				Print(folder);
+			}
 		}
 		else if (arguments.SaveFile)
 		{
