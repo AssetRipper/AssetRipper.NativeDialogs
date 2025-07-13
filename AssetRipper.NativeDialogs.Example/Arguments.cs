@@ -24,6 +24,10 @@ internal sealed partial class Arguments
 	public bool SaveFile { get; set; }
 
 	[CommandLineArgument]
+	[Description("Show the confirmation dialog.")]
+	public bool Confirmation { get; set; }
+
+	[CommandLineArgument]
 	[Description("Show the message dialog.")]
 	public bool Message { get; set; }
 }

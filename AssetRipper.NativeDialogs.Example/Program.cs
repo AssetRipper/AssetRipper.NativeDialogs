@@ -61,9 +61,26 @@ internal static class Program
 			string? file = await SaveFileDialog.SaveFileAsync();
 			Print(file);
 		}
+		else if (arguments.Confirmation)
+		{
+			bool? result = await ConfirmationDialog.ConfirmAsync("Are you sure you want to proceed?", "Yes", "No");
+			switch (result)
+			{
+				case true:
+					Console.WriteLine("Confirmed.");
+					break;
+				case false:
+					Console.WriteLine("Cancelled.");
+					break;
+				case null:
+					Console.WriteLine("No response.");
+					break;
+			}
+		}
 		else if (arguments.Message)
 		{
-			throw new NotImplementedException("Message dialog is not implemented in this example.");
+			await MessageDialog.MessageAsync("This is a message dialog.", "OK");
+			Console.WriteLine("Message dialog displayed.");
 		}
 		else
 		{
