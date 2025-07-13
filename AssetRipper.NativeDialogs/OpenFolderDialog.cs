@@ -9,20 +9,19 @@ public static class OpenFolderDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<string?> OpenFolderAsync(OpenFileDialogOptions? options = null)
+	public static Task<string?> OpenFolderAsync()
 	{
-		options ??= OpenFileDialogOptions.Default;
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFolderAsyncWindows(options);
+			return OpenFolderAsyncWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFolderAsyncMacOS(options);
+			return OpenFolderAsyncMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFolderAsyncLinux(options);
+			return OpenFolderAsyncLinux();
 		}
 		else
 		{
@@ -31,19 +30,19 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string?> OpenFolderAsyncWindows(OpenFileDialogOptions options)
+	private unsafe static Task<string?> OpenFolderAsyncWindows()
 	{
 		return Task.FromResult<string?>(null);
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<string?> OpenFolderAsyncMacOS(OpenFileDialogOptions options)
+	private static Task<string?> OpenFolderAsyncMacOS()
 	{
 		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose folder)");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> OpenFolderAsyncLinux(OpenFileDialogOptions options)
+	private static Task<string?> OpenFolderAsyncLinux()
 	{
 		return Task.FromResult<string?>(null);
 	}

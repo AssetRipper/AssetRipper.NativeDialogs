@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
-using System.Text;
 using TerraFX.Interop.Windows;
 
 namespace AssetRipper.NativeDialogs;
@@ -13,20 +12,19 @@ public static class OpenFilesDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<string[]?> OpenFilesAsync(OpenFileDialogOptions? options = null)
+	public static Task<string[]?> OpenFilesAsync()
 	{
-		options ??= OpenFileDialogOptions.Default;
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFilesAsyncWindows(options);
+			return OpenFilesAsyncWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFilesAsyncMacOS(options);
+			return OpenFilesAsyncMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFilesAsyncLinux(options);
+			return OpenFilesAsyncLinux();
 		}
 		else
 		{
@@ -35,30 +33,14 @@ public static class OpenFilesDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string[]?> OpenFilesAsyncWindows(OpenFileDialogOptions options)
+	private unsafe static Task<string[]?> OpenFilesAsyncWindows()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamew
 
 		char[] buffer = ArrayPool<char>.Shared.Rent(ushort.MaxValue + 1); // Should be enough for the overwhelming majority of cases.
 		new Span<char>(buffer).Clear();
 
-		string filter;
-		if (options.Filters.Count == 0)
-		{
-			filter = "All Files\0*.*\0\0";
-		}
-		else
-		{
-			StringBuilder filterBuilder = new();
-			foreach (KeyValuePair<string, string> pair in options.Filters)
-			{
-				filterBuilder
-					.Append(pair.Key).Append('\0')
-					.Append("*.").Append(pair.Value).Append('\0');
-			}
-			filterBuilder.Append('\0'); // End of filter list
-			filter = filterBuilder.ToString();
-		}
+		string filter = "All Files\0*.*\0\0";
 
 		fixed (char* bufferPtr = buffer)
 		fixed (char* filterPtr = filter)
@@ -105,7 +87,7 @@ public static class OpenFilesDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static async Task<string[]?> OpenFilesAsyncMacOS(OpenFileDialogOptions options)
+	private static async Task<string[]?> OpenFilesAsyncMacOS()
 	{
 		ReadOnlySpan<string> arguments =
 		[
@@ -126,7 +108,7 @@ public static class OpenFilesDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFilesAsyncLinux(OpenFileDialogOptions options)
+	private static async Task<string[]?> OpenFilesAsyncLinux()
 	{
 		// Todo: proper Linux implementation
 		string? path = await OpenFileDialog.OpenFileAsync();

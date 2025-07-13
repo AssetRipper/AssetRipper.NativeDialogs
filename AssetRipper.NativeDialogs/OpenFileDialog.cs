@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
-using System.Text;
 using TerraFX.Interop.Windows;
 
 namespace AssetRipper.NativeDialogs;
@@ -13,20 +12,19 @@ public static class OpenFileDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<string?> OpenFileAsync(OpenFileDialogOptions? options = null)
+	public static Task<string?> OpenFileAsync()
 	{
-		options ??= OpenFileDialogOptions.Default;
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFileAsyncWindows(options);
+			return OpenFileAsyncWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFileAsyncMacOS(options);
+			return OpenFileAsyncMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFileAsyncLinux(options);
+			return OpenFileAsyncLinux();
 		}
 		else
 		{
@@ -35,30 +33,14 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string?> OpenFileAsyncWindows(OpenFileDialogOptions options)
+	private unsafe static Task<string?> OpenFileAsyncWindows()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamew
 
 		char[] buffer = ArrayPool<char>.Shared.Rent(ushort.MaxValue + 1); // Should be enough for the overwhelming majority of cases.
 		new Span<char>(buffer).Clear();
 
-		string filter;
-		if (options.Filters.Count == 0)
-		{
-			filter = "All Files\0*.*\0\0";
-		}
-		else
-		{
-			StringBuilder filterBuilder = new();
-			foreach (KeyValuePair<string, string> pair in options.Filters)
-			{
-				filterBuilder
-					.Append(pair.Key).Append('\0')
-					.Append("*.").Append(pair.Value).Append('\0');
-			}
-			filterBuilder.Append('\0'); // End of filter list
-			filter = filterBuilder.ToString();
-		}
+		string filter = "All Files\0*.*\0\0";
 
 		fixed (char* bufferPtr = buffer)
 		fixed (char* filterPtr = filter)
@@ -88,13 +70,13 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<string?> OpenFileAsyncMacOS(OpenFileDialogOptions options)
+	private static Task<string?> OpenFileAsyncMacOS()
 	{
 		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose file)");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> OpenFileAsyncLinux(OpenFileDialogOptions options)
+	private static Task<string?> OpenFileAsyncLinux()
 	{
 		if (Gtk.Global.IsSupported)
 		{
