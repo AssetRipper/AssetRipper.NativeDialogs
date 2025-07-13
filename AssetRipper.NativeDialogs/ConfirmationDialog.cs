@@ -9,19 +9,19 @@ public static class ConfirmationDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<bool?> ConfirmAsync(string message, string trueLabel, string falseLabel)
+	public static Task<bool?> Confirm(string message, string trueLabel, string falseLabel)
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return ConfirmAsyncWindows();
+			return ConfirmWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return ConfirmAsyncMacOS();
+			return ConfirmMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return ConfirmAsyncLinux();
+			return ConfirmLinux();
 		}
 		else
 		{
@@ -30,19 +30,19 @@ public static class ConfirmationDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<bool?> ConfirmAsyncWindows()
+	private unsafe static Task<bool?> ConfirmWindows()
 	{
 		return Task.FromResult<bool?>(null);
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<bool?> ConfirmAsyncMacOS()
+	private static Task<bool?> ConfirmMacOS()
 	{
 		return Task.FromResult<bool?>(null);
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<bool?> ConfirmAsyncLinux()
+	private static Task<bool?> ConfirmLinux()
 	{
 		if (Gtk.Global.IsSupported)
 		{

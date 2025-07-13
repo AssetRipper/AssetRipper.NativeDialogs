@@ -12,19 +12,19 @@ public static class SaveFileDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<string?> SaveFileAsync()
+	public static Task<string?> SaveFile()
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return SaveFileAsyncWindows();
+			return SaveFileWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return SaveFileAsyncMacOS();
+			return SaveFileMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return SaveFileAsyncLinux();
+			return SaveFileLinux();
 		}
 		else
 		{
@@ -33,7 +33,7 @@ public static class SaveFileDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string?> SaveFileAsyncWindows()
+	private unsafe static Task<string?> SaveFileWindows()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamew
 
@@ -70,13 +70,13 @@ public static class SaveFileDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<string?> SaveFileAsyncMacOS()
+	private static Task<string?> SaveFileMacOS()
 	{
 		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose file)");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> SaveFileAsyncLinux()
+	private static Task<string?> SaveFileLinux()
 	{
 		if (Gtk.Global.IsSupported)
 		{

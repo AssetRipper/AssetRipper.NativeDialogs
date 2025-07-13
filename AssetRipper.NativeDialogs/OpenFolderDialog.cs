@@ -9,19 +9,19 @@ public static class OpenFolderDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<string?> OpenFolderAsync()
+	public static Task<string?> OpenFolder()
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFolderAsyncWindows();
+			return OpenFolderWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFolderAsyncMacOS();
+			return OpenFolderMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFolderAsyncLinux();
+			return OpenFolderLinux();
 		}
 		else
 		{
@@ -30,36 +30,36 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string?> OpenFolderAsyncWindows()
+	private unsafe static Task<string?> OpenFolderWindows()
 	{
 		return Task.FromResult<string?>(null);
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<string?> OpenFolderAsyncMacOS()
+	private static Task<string?> OpenFolderMacOS()
 	{
 		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose folder)");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> OpenFolderAsyncLinux()
+	private static Task<string?> OpenFolderLinux()
 	{
 		return Task.FromResult<string?>(null);
 	}
 
-	public static Task<string[]?> OpenFoldersAsync()
+	public static Task<string[]?> OpenFolders()
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFoldersAsyncWindows();
+			return OpenFoldersWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFoldersAsyncMacOS();
+			return OpenFoldersMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFoldersAsyncLinux();
+			return OpenFoldersLinux();
 		}
 		else
 		{
@@ -68,10 +68,10 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private static async Task<string[]?> OpenFoldersAsyncWindows()
+	private static async Task<string[]?> OpenFoldersWindows()
 	{
 		// Todo: proper Windows implementation
-		string? path = await OpenFolderAsync();
+		string? path = await OpenFolder();
 		if (string.IsNullOrEmpty(path))
 		{
 			return null; // User canceled the dialog
@@ -80,10 +80,10 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static async Task<string[]?> OpenFoldersAsyncMacOS()
+	private static async Task<string[]?> OpenFoldersMacOS()
 	{
 		// Todo: proper Mac implementation
-		string? path = await OpenFolderAsync();
+		string? path = await OpenFolder();
 		if (string.IsNullOrEmpty(path))
 		{
 			return null; // User canceled the dialog
@@ -92,10 +92,10 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFoldersAsyncLinux()
+	private static async Task<string[]?> OpenFoldersLinux()
 	{
 		// Todo: proper Linux implementation
-		string? path = await OpenFolderAsync();
+		string? path = await OpenFolder();
 		if (string.IsNullOrEmpty(path))
 		{
 			return null; // User canceled the dialog

@@ -12,19 +12,19 @@ public static class OpenFileDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task<string?> OpenFileAsync()
+	public static Task<string?> OpenFile()
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFileAsyncWindows();
+			return OpenFileWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFileAsyncMacOS();
+			return OpenFileMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFileAsyncLinux();
+			return OpenFileLinux();
 		}
 		else
 		{
@@ -33,7 +33,7 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string?> OpenFileAsyncWindows()
+	private unsafe static Task<string?> OpenFileWindows()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamew
 
@@ -70,13 +70,13 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<string?> OpenFileAsyncMacOS()
+	private static Task<string?> OpenFileMacOS()
 	{
 		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose file)");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> OpenFileAsyncLinux()
+	private static Task<string?> OpenFileLinux()
 	{
 		if (Gtk.Global.IsSupported)
 		{
@@ -111,19 +111,19 @@ public static class OpenFileDialog
 		}
 	}
 
-	public static Task<string[]?> OpenFilesAsync()
+	public static Task<string[]?> OpenFiles()
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return OpenFilesAsyncWindows();
+			return OpenFilesWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return OpenFilesAsyncMacOS();
+			return OpenFilesMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return OpenFilesAsyncLinux();
+			return OpenFilesLinux();
 		}
 		else
 		{
@@ -132,7 +132,7 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string[]?> OpenFilesAsyncWindows()
+	private unsafe static Task<string[]?> OpenFilesWindows()
 	{
 		// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamew
 
@@ -186,7 +186,7 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static async Task<string[]?> OpenFilesAsyncMacOS()
+	private static async Task<string[]?> OpenFilesMacOS()
 	{
 		ReadOnlySpan<string> arguments =
 		[
@@ -207,10 +207,10 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFilesAsyncLinux()
+	private static async Task<string[]?> OpenFilesLinux()
 	{
 		// Todo: proper Linux implementation
-		string? path = await OpenFileAsync();
+		string? path = await OpenFile();
 		if (string.IsNullOrEmpty(path))
 		{
 			return null; // User canceled the dialog

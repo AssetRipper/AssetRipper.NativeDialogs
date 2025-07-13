@@ -9,19 +9,19 @@ public static class MessageDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task MessageAsync(string message, string label)
+	public static Task Message(string message, string label)
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return MessageAsyncWindows();
+			return MessageWindows();
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return MessageAsyncMacOS();
+			return MessageMacOS();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return MessageAsyncLinux();
+			return MessageLinux();
 		}
 		else
 		{
@@ -30,19 +30,19 @@ public static class MessageDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task MessageAsyncWindows()
+	private unsafe static Task MessageWindows()
 	{
 		return Task.CompletedTask;
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task MessageAsyncMacOS()
+	private static Task MessageMacOS()
 	{
 		return Task.CompletedTask;
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task MessageAsyncLinux()
+	private static Task MessageLinux()
 	{
 		if (Gtk.Global.IsSupported)
 		{

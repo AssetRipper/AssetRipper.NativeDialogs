@@ -14,7 +14,7 @@ internal static class Program
 		{
 			if (arguments.AllowMultiple)
 			{
-				string[]? files = await OpenFileDialog.OpenFilesAsync();
+				string[]? files = await OpenFileDialog.OpenFiles();
 				if (files is null || files.Length == 0)
 				{
 					Console.WriteLine("No files selected.");
@@ -29,7 +29,7 @@ internal static class Program
 			}
 			else
 			{
-				string? file = await OpenFileDialog.OpenFileAsync();
+				string? file = await OpenFileDialog.OpenFile();
 				Print(file);
 			}
 		}
@@ -37,7 +37,7 @@ internal static class Program
 		{
 			if (arguments.AllowMultiple)
 			{
-				string[]? folders = await OpenFolderDialog.OpenFoldersAsync();
+				string[]? folders = await OpenFolderDialog.OpenFolders();
 				if (folders is null || folders.Length == 0)
 				{
 					Console.WriteLine("No folders selected.");
@@ -52,18 +52,18 @@ internal static class Program
 			}
 			else
 			{
-				string? folder = await OpenFolderDialog.OpenFolderAsync();
+				string? folder = await OpenFolderDialog.OpenFolder();
 				Print(folder);
 			}
 		}
 		else if (arguments.SaveFile)
 		{
-			string? file = await SaveFileDialog.SaveFileAsync();
+			string? file = await SaveFileDialog.SaveFile();
 			Print(file);
 		}
 		else if (arguments.Confirmation)
 		{
-			bool? result = await ConfirmationDialog.ConfirmAsync("Are you sure you want to proceed?", "Yes", "No");
+			bool? result = await ConfirmationDialog.Confirm("Are you sure you want to proceed?", "Yes", "No");
 			switch (result)
 			{
 				case true:
@@ -79,7 +79,7 @@ internal static class Program
 		}
 		else if (arguments.Message)
 		{
-			await MessageDialog.MessageAsync("This is a message dialog.", "OK");
+			await MessageDialog.Message("This is a message dialog.", "OK");
 			Console.WriteLine("Message dialog displayed.");
 		}
 		else
