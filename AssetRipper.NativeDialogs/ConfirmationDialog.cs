@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using TerraFX.Interop.Windows;
 
@@ -6,24 +7,46 @@ namespace AssetRipper.NativeDialogs;
 
 public static class ConfirmationDialog
 {
-	public static Task<bool?> Confirm(string message, string trueLabel, string falseLabel)
+	public enum Type
 	{
-		ArgumentException.ThrowIfNullOrEmpty(message);
-		ArgumentException.ThrowIfNullOrEmpty(trueLabel);
-		ArgumentException.ThrowIfNullOrEmpty(falseLabel);
-		ArgumentOutOfRangeException.ThrowIfEqual(trueLabel, falseLabel);
+		OkCancel,
+		YesNo,
+	}
+
+	public readonly struct Options
+	{
+		public required string Message { get; init; }
+		public Type Type { get; init; } = Type.OkCancel;
+		internal string TrueLabel => Type == Type.OkCancel ? "OK" : "Yes";
+		internal string FalseLabel => Type == Type.OkCancel ? "Cancel" : "No";
+
+		public Options()
+		{
+		}
+
+		[SetsRequiredMembers]
+		public Options(string message, Type type = Type.OkCancel)
+		{
+			Message = message;
+			Type = type;
+		}
+	}
+
+	public static Task<bool?> Confirm(Options options)
+	{
+		ArgumentException.ThrowIfNullOrEmpty(options.Message);
 
 		if (OperatingSystem.IsWindows())
 		{
-			return ConfirmWindows(message, trueLabel, falseLabel);
+			return ConfirmWindows(options);
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return ConfirmMacOS(message, trueLabel, falseLabel);
+			return ConfirmMacOS(options);
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return ConfirmLinux(message, trueLabel, falseLabel);
+			return ConfirmLinux(options);
 		}
 		else
 		{
@@ -32,17 +55,17 @@ public static class ConfirmationDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<bool?> ConfirmWindows(string message, string trueLabel, string falseLabel)
+	private unsafe static Task<bool?> ConfirmWindows(Options options)
 	{
 		int statusCode;
-		fixed (char* messagePtr = message)
+		fixed (char* messagePtr = options.Message)
 		{
 			// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
 			statusCode = Windows.MessageBoxW(
 				default, // No owner window.
 				messagePtr, // Message text.
 				null, // Title.
-				MB.MB_OKCANCEL | MB.MB_ICONQUESTION); // OK button and information icon.
+				(options.Type == Type.OkCancel ? (uint)MB.MB_OKCANCEL : MB.MB_YESNO) | MB.MB_ICONQUESTION); // OK button and information icon.
 		}
 
 		if (statusCode == 0)
@@ -65,19 +88,19 @@ public static class ConfirmationDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static async Task<bool?> ConfirmMacOS(string message, string trueLabel, string falseLabel)
+	private static async Task<bool?> ConfirmMacOS(Options options)
 	{
-		string escapedMessage = ProcessExecutor.EscapeString(message);
-		string escapedTrueLabel = ProcessExecutor.EscapeString(trueLabel);
-		string escapedFalseLabel = ProcessExecutor.EscapeString(falseLabel);
+		string escapedMessage = ProcessExecutor.EscapeString(options.Message);
+		string escapedTrueLabel = ProcessExecutor.EscapeString(options.TrueLabel);
+		string escapedFalseLabel = ProcessExecutor.EscapeString(options.FalseLabel);
 		string? result = await ProcessExecutor.TryRun("osascript",
 			"-e", $"display dialog \"{escapedMessage}\" buttons {{\"{escapedFalseLabel}\", \"{escapedTrueLabel}\"}} default button \"{escapedTrueLabel}\"",
 			"-e", "button returned of result");
-		if (result == trueLabel)
+		if (result == options.TrueLabel)
 		{
 			return true;
 		}
-		else if (result == falseLabel)
+		else if (result == options.FalseLabel)
 		{
 			return false;
 		}
@@ -88,7 +111,7 @@ public static class ConfirmationDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<bool?> ConfirmLinux(string message, string trueLabel, string falseLabel)
+	private static Task<bool?> ConfirmLinux(Options options)
 	{
 		if (Gtk.Global.IsSupported)
 		{
@@ -101,7 +124,7 @@ public static class ConfirmationDialog
 					Gtk.DialogFlags.Modal,
 					Gtk.MessageType.Info,
 					Gtk.ButtonsType.Ok,
-					message
+					options.Message
 				);
 				int response = md.Run();
 				result = response switch

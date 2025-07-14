@@ -69,7 +69,7 @@ internal static class Program
 		}
 		else if (arguments.Confirmation)
 		{
-			bool? result = await ConfirmationDialog.Confirm("Are you sure you want to proceed?", "Yes", "No");
+			bool? result = await ConfirmationDialog.Confirm(new("Are you sure you want to proceed?", ConfirmationDialog.Type.YesNo));
 			switch (result)
 			{
 				case true:

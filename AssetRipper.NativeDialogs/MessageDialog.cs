@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using TerraFX.Interop.Windows;
 
@@ -6,19 +7,36 @@ namespace AssetRipper.NativeDialogs;
 
 public static class MessageDialog
 {
-	public static Task Message(string message)
+	public readonly struct Options
+	{
+		public required string Message { get; init; }
+
+		public Options()
+		{
+		}
+
+		[SetsRequiredMembers]
+		public Options(string message)
+		{
+			Message = message;
+		}
+	}
+
+	public static Task Message(string message) => Message(new Options(message));
+
+	public static Task Message(Options options)
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return MessageWindows(message);
+			return MessageWindows(options);
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return MessageMacOS(message);
+			return MessageMacOS(options);
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return MessageLinux(message);
+			return MessageLinux(options);
 		}
 		else
 		{
@@ -27,10 +45,10 @@ public static class MessageDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task MessageWindows(string message)
+	private unsafe static Task MessageWindows(Options options)
 	{
 		int statusCode;
-		fixed (char* messagePtr = message)
+		fixed (char* messagePtr = options.Message)
 		{
 			// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
 			statusCode = Windows.MessageBoxW(
@@ -54,14 +72,14 @@ public static class MessageDialog
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task MessageMacOS(string message)
+	private static Task MessageMacOS(Options options)
 	{
-		string escapedMessage = ProcessExecutor.EscapeString(message);
+		string escapedMessage = ProcessExecutor.EscapeString(options.Message);
 		return ProcessExecutor.TryRun("osascript", "-e", $"display dialog \"{escapedMessage}\" buttons {{\"OK\"}}");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task MessageLinux(string message)
+	private static Task MessageLinux(Options options)
 	{
 		if (Gtk.Global.IsSupported)
 		{
@@ -73,7 +91,7 @@ public static class MessageDialog
 					Gtk.DialogFlags.Modal,
 					Gtk.MessageType.Info,
 					Gtk.ButtonsType.Ok,
-					message
+					options.Message
 				);
 				md.Run();
 			}
