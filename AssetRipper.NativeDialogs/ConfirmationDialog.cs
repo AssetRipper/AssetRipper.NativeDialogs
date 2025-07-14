@@ -123,7 +123,7 @@ public static class ConfirmationDialog
 					null,
 					Gtk.DialogFlags.Modal,
 					Gtk.MessageType.Info,
-					Gtk.ButtonsType.Ok,
+					options.Type == Type.OkCancel ? Gtk.ButtonsType.OkCancel : Gtk.ButtonsType.YesNo,
 					options.Message
 				);
 				int response = md.Run();
