@@ -71,7 +71,7 @@ public static class ConfirmationDialog
 		string escapedTrueLabel = ProcessExecutor.EscapeString(trueLabel);
 		string escapedFalseLabel = ProcessExecutor.EscapeString(falseLabel);
 		string? result = await ProcessExecutor.TryRun("osascript",
-			"-e", $"display dialog \"{escapedMessage}\" buttons {{\"{escapedTrueLabel}\", \"{escapedFalseLabel}\"}} default button \"{escapedTrueLabel}\"",
+			"-e", $"display dialog \"{escapedMessage}\" buttons {{\"{escapedFalseLabel}\", \"{escapedTrueLabel}\"}} default button \"{escapedTrueLabel}\"",
 			"-e", "button returned of result");
 		if (result == trueLabel)
 		{

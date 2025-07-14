@@ -57,7 +57,7 @@ public static class MessageDialog
 	private static Task MessageMacOS(string message)
 	{
 		string escapedMessage = ProcessExecutor.EscapeString(message);
-		return ProcessExecutor.TryRun("osascript", "-e", $"display dialog \"{escapedMessage}\"");
+		return ProcessExecutor.TryRun("osascript", "-e", $"display dialog \"{escapedMessage}\" buttons {{\"OK\"}}");
 	}
 
 	[SupportedOSPlatform("linux")]
