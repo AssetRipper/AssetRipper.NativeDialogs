@@ -1,4 +1,6 @@
-﻿using System.Runtime.Versioning;
+﻿using System.ComponentModel;
+using System.Runtime.Versioning;
+using TerraFX.Interop.Windows;
 
 namespace AssetRipper.NativeDialogs;
 
@@ -37,7 +39,34 @@ public static class ConfirmationDialog
 	[SupportedOSPlatform("windows")]
 	private unsafe static Task<bool?> ConfirmWindows(string message, string trueLabel, string falseLabel)
 	{
-		return Task.FromResult<bool?>(null);
+		int statusCode;
+		fixed (char* messagePtr = message)
+		{
+			// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
+			statusCode = Windows.MessageBoxW(
+				default, // No owner window.
+				messagePtr, // Message text.
+				null, // Title.
+				MB.MB_OKCANCEL | MB.MB_ICONQUESTION); // OK button and information icon.
+		}
+
+		if (statusCode == 0)
+		{
+			int errorCode = unchecked((int)Windows.GetLastError());
+			throw new Win32Exception(errorCode, "Failed to show message dialog.");
+		}
+		else if (statusCode is Windows.IDYES or Windows.IDOK)
+		{
+			return Task.FromResult<bool?>(true);
+		}
+		else if (statusCode is Windows.IDNO or Windows.IDCANCEL)
+		{
+			return Task.FromResult<bool?>(false);
+		}
+		else
+		{
+			throw new($"Unexpected status code {statusCode} from {nameof(Windows.MessageBoxW)}.");
+		}
 	}
 
 	[SupportedOSPlatform("macos")]
@@ -72,7 +101,20 @@ public static class ConfirmationDialog
 			Gtk.Application.Init(); // spins a main loop
 			try
 			{
-				result = null;
+				using Gtk.MessageDialog md = new(
+					null,
+					Gtk.DialogFlags.Modal,
+					Gtk.MessageType.Info,
+					Gtk.ButtonsType.Ok,
+					message
+				);
+				int response = md.Run();
+				result = response switch
+				{
+					(int)Gtk.ResponseType.Ok or (int)Gtk.ResponseType.Yes => true,
+					(int)Gtk.ResponseType.Cancel or (int)Gtk.ResponseType.No => false,
+					_ => throw new($"Unexpected response type: {response}"),
+				};
 			}
 			finally
 			{
