@@ -84,7 +84,7 @@ public static class SaveFileDialog
 
 			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
 			{
-				result = dlg.File?.Path;
+				result = dlg.Filename;
 			}
 			else
 			{
