@@ -116,28 +116,23 @@ public static class ConfirmationDialog
 		if (Gtk.Global.IsSupported)
 		{
 			bool? result;
-			Gtk.Application.Init(); // spins a main loop
-			try
+			Gtk.Application.Init();
+
+			using Gtk.MessageDialog md = new(
+				null,
+				Gtk.DialogFlags.Modal,
+				Gtk.MessageType.Info,
+				options.Type == Type.OkCancel ? Gtk.ButtonsType.OkCancel : Gtk.ButtonsType.YesNo,
+				options.Message
+			);
+
+			int response = md.Run();
+			result = response switch
 			{
-				using Gtk.MessageDialog md = new(
-					null,
-					Gtk.DialogFlags.Modal,
-					Gtk.MessageType.Info,
-					options.Type == Type.OkCancel ? Gtk.ButtonsType.OkCancel : Gtk.ButtonsType.YesNo,
-					options.Message
-				);
-				int response = md.Run();
-				result = response switch
-				{
-					(int)Gtk.ResponseType.Ok or (int)Gtk.ResponseType.Yes => true,
-					(int)Gtk.ResponseType.Cancel or (int)Gtk.ResponseType.No => false,
-					_ => throw new($"Unexpected response type: {response}"),
-				};
-			}
-			finally
-			{
-				//Gtk.Application.Quit(); // stops the main loop
-			}
+				(int)Gtk.ResponseType.Ok or (int)Gtk.ResponseType.Yes => true,
+				(int)Gtk.ResponseType.Cancel or (int)Gtk.ResponseType.No => false,
+				_ => throw new($"Unexpected response type: {response}"),
+			};
 
 			return Task.FromResult(result);
 		}

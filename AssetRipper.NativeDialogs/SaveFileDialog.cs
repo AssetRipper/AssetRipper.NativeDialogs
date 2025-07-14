@@ -76,25 +76,19 @@ public static class SaveFileDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string? result;
-			Gtk.Application.Init(); // spins a main loop
-			try
-			{
-				using Gtk.FileChooserNative dlg = new(
-					"Save a file", null,
-					Gtk.FileChooserAction.Save, "Save", "Cancel");
+			Gtk.Application.Init();
 
-				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-				{
-					result = dlg.File?.Path;
-				}
-				else
-				{
-					result = null; // User canceled the dialog
-				}
-			}
-			finally
+			using Gtk.FileChooserNative dlg = new(
+				"Save a file", null,
+				Gtk.FileChooserAction.Save, "Save", "Cancel");
+
+			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
 			{
-				//Gtk.Application.Quit(); // stops the main loop
+				result = dlg.File?.Path;
+			}
+			else
+			{
+				result = null; // User canceled the dialog
 			}
 
 			return Task.FromResult(result);

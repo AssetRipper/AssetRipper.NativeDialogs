@@ -83,22 +83,16 @@ public static class MessageDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			Gtk.Application.Init(); // spins a main loop
-			try
-			{
-				using Gtk.MessageDialog md = new(
-					null,
-					Gtk.DialogFlags.Modal,
-					Gtk.MessageType.Info,
-					Gtk.ButtonsType.Ok,
-					options.Message
-				);
-				md.Run();
-			}
-			finally
-			{
-				//Gtk.Application.Quit(); // stops the main loop
-			}
+			Gtk.Application.Init();
+
+			using Gtk.MessageDialog md = new(
+				null,
+				Gtk.DialogFlags.Modal,
+				Gtk.MessageType.Info,
+				Gtk.ButtonsType.Ok,
+				options.Message
+			);
+			md.Run();
 
 			return Task.CompletedTask;
 		}

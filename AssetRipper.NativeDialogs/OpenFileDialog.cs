@@ -74,25 +74,19 @@ public static class OpenFileDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string? result;
-			Gtk.Application.Init(); // spins a main loop
-			try
-			{
-				using Gtk.FileChooserNative dlg = new(
-					"Open a file", null,
-					Gtk.FileChooserAction.Open, "Open", "Cancel");
+			Gtk.Application.Init();
 
-				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-				{
-					result = dlg.Filename;
-				}
-				else
-				{
-					result = null; // User canceled the dialog
-				}
-			}
-			finally
+			using Gtk.FileChooserNative dlg = new(
+				"Open a file", null,
+				Gtk.FileChooserAction.Open, "Open", "Cancel");
+
+			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
 			{
-				//Gtk.Application.Quit(); // stops the main loop
+				result = dlg.Filename;
+			}
+			else
+			{
+				result = null; // User canceled the dialog
 			}
 
 			return Task.FromResult(result);
@@ -203,27 +197,21 @@ public static class OpenFileDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string[]? result;
-			Gtk.Application.Init(); // spins a main loop
-			try
+			Gtk.Application.Init();
+
+			using Gtk.FileChooserNative dlg = new(
+				"Open files", null,
+				Gtk.FileChooserAction.Open, "Open", "Cancel");
+
+			dlg.SelectMultiple = true; // Allow multiple folder selection
+
+			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
 			{
-				using Gtk.FileChooserNative dlg = new(
-					"Open files", null,
-					Gtk.FileChooserAction.Open, "Open", "Cancel");
-
-				dlg.SelectMultiple = true; // Allow multiple folder selection
-
-				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-				{
-					result = dlg.Filenames;
-				}
-				else
-				{
-					result = null; // User canceled the dialog
-				}
+				result = dlg.Filenames;
 			}
-			finally
+			else
 			{
-				//Gtk.Application.Quit(); // stops the main loop
+				result = null; // User canceled the dialog
 			}
 
 			return Task.FromResult(result);
