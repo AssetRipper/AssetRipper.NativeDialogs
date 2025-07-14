@@ -1,4 +1,6 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Diagnostics;
+using System.Runtime.Versioning;
+using TerraFX.Interop.Windows;
 
 namespace AssetRipper.NativeDialogs;
 
@@ -30,9 +32,88 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<string?> OpenFolderWindows()
+	private static Task<string?> OpenFolderWindows()
 	{
-		return Task.FromResult<string?>(null);
+		TaskCompletionSource<string?> tcs = new();
+
+		Thread thread = new(() =>
+		{
+			try
+			{
+				// Run the STA work
+				Debug.Assert(OperatingSystem.IsWindows());
+				string? result = OpenFolderWindowsInternal();
+
+				// Mark task complete
+				tcs.SetResult(result);
+			}
+			catch (Exception ex)
+			{
+				tcs.SetException(ex);
+			}
+		});
+		thread.SetApartmentState(ApartmentState.STA);
+		thread.Start();
+
+		return tcs.Task;
+	}
+
+	[SupportedOSPlatform("windows")]
+	private unsafe static string? OpenFolderWindowsInternal()
+	{
+		string? result = null;
+
+		HRESULT hr = Windows.CoInitializeEx(null, (uint)COINIT.COINIT_APARTMENTTHREADED);
+		switch (hr.Value)
+		{
+			case S.S_OK:
+				Windows.CoUninitialize();
+				throw new InvalidOperationException("CoInitializeEx failed with S_OK, which should never happen because .NET is supposed to initialize the thread.");
+			case S.S_FALSE:
+				// The thread is already initialized, which is expected.
+				break;
+			case RPC.RPC_E_CHANGED_MODE:
+				// The thread is already initialized with a different mode, which is unexpected.
+				throw new InvalidOperationException("CoInitializeEx failed with RPC_E_CHANGED_MODE, which should never happen because we only call this method in STA threads.");
+		}
+
+		IFileOpenDialog* pFileDialog = null;
+
+		// Assign the CLSID and IID for the FileOpenDialog.
+		Guid CLSID_FileOpenDialog = new("DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7");
+		Guid IID_IFileOpenDialog = new("D57C7288-D4AD-4768-BE02-9D969532D960");
+
+		// Create the FileOpenDialog object.
+		hr = Windows.CoCreateInstance(&CLSID_FileOpenDialog, null, (uint)CLSCTX.CLSCTX_INPROC_SERVER, &IID_IFileOpenDialog, (void**)&pFileDialog);
+		if (Windows.SUCCEEDED(hr))
+		{
+			// Set the options on the dialog.
+			uint dwOptions;
+			pFileDialog->GetOptions(&dwOptions);
+			pFileDialog->SetOptions(dwOptions | (uint)FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS | (uint)FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM);
+
+			// Show the dialog
+			hr = pFileDialog->Show(default);
+			if (Windows.SUCCEEDED(hr))
+			{
+				IShellItem* pItem;
+				hr = pFileDialog->GetResult(&pItem);
+				if (Windows.SUCCEEDED(hr))
+				{
+					char* pszFilePath = null;
+					hr = pItem->GetDisplayName(SIGDN.SIGDN_FILESYSPATH, &pszFilePath);
+					if (Windows.SUCCEEDED(hr))
+					{
+						result = new string(pszFilePath);
+						Windows.CoTaskMemFree(pszFilePath);
+					}
+					pItem->Release();
+				}
+			}
+			pFileDialog->Release();
+		}
+
+		return result;
 	}
 
 	[SupportedOSPlatform("macos")]
@@ -44,7 +125,37 @@ public static class OpenFolderDialog
 	[SupportedOSPlatform("linux")]
 	private static Task<string?> OpenFolderLinux()
 	{
-		return Task.FromResult<string?>(null);
+		if (Gtk.Global.IsSupported)
+		{
+			string? result;
+			Gtk.Application.Init(); // spins a main loop
+			try
+			{
+				using Gtk.FileChooserNative dlg = new(
+					"Open a folder", null,
+					Gtk.FileChooserAction.SelectFolder, "Open", "Cancel");
+
+				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
+				{
+					result = dlg.Filename;
+				}
+				else
+				{
+					result = null; // User canceled the dialog
+				}
+			}
+			finally
+			{
+				Gtk.Application.Quit(); // stops the main loop
+			}
+
+			return Task.FromResult(result);
+		}
+		else
+		{
+			// Fallback
+			return Task.FromResult<string?>(null);
+		}
 	}
 
 	public static Task<string[]?> OpenFolders()
@@ -101,14 +212,40 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFoldersLinux()
+	private static Task<string[]?> OpenFoldersLinux()
 	{
-		// Todo: proper Linux implementation
-		string? path = await OpenFolder();
-		if (string.IsNullOrEmpty(path))
+		if (Gtk.Global.IsSupported)
 		{
-			return null; // User canceled the dialog
+			string[]? result;
+			Gtk.Application.Init(); // spins a main loop
+			try
+			{
+				using Gtk.FileChooserNative dlg = new(
+					"Open folders", null,
+					Gtk.FileChooserAction.SelectFolder, "Open", "Cancel");
+
+				dlg.SelectMultiple = true; // Allow multiple folder selection
+
+				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
+				{
+					result = dlg.Filenames;
+				}
+				else
+				{
+					result = null; // User canceled the dialog
+				}
+			}
+			finally
+			{
+				Gtk.Application.Quit(); // stops the main loop
+			}
+
+			return Task.FromResult(result);
 		}
-		return [path];
+		else
+		{
+			// Fallback
+			return Task.FromResult<string[]?>(null);
+		}
 	}
 }

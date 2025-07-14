@@ -40,10 +40,8 @@ public static class OpenFileDialog
 		char[] buffer = ArrayPool<char>.Shared.Rent(ushort.MaxValue + 1); // Should be enough for the overwhelming majority of cases.
 		new Span<char>(buffer).Clear();
 
-		string filter = "All Files\0*.*\0\0";
-
 		fixed (char* bufferPtr = buffer)
-		fixed (char* filterPtr = filter)
+		fixed (char* filterPtr = "All Files\0*.*\0")
 		{
 			OPENFILENAMEW ofn = default;
 			ofn.lStructSize = (uint)Unsafe.SizeOf<OPENFILENAMEW>();
@@ -90,7 +88,7 @@ public static class OpenFileDialog
 
 				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
 				{
-					result = dlg.File?.Path;
+					result = dlg.Filename;
 				}
 				else
 				{
@@ -139,10 +137,8 @@ public static class OpenFileDialog
 		char[] buffer = ArrayPool<char>.Shared.Rent(ushort.MaxValue + 1); // Should be enough for the overwhelming majority of cases.
 		new Span<char>(buffer).Clear();
 
-		string filter = "All Files\0*.*\0\0";
-
 		fixed (char* bufferPtr = buffer)
-		fixed (char* filterPtr = filter)
+		fixed (char* filterPtr = "All Files\0*.*\0")
 		{
 			OPENFILENAMEW ofn = default;
 			ofn.lStructSize = (uint)Unsafe.SizeOf<OPENFILENAMEW>();
@@ -207,14 +203,40 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFilesLinux()
+	private static Task<string[]?> OpenFilesLinux()
 	{
-		// Todo: proper Linux implementation
-		string? path = await OpenFile();
-		if (string.IsNullOrEmpty(path))
+		if (Gtk.Global.IsSupported)
 		{
-			return null; // User canceled the dialog
+			string[]? result;
+			Gtk.Application.Init(); // spins a main loop
+			try
+			{
+				using Gtk.FileChooserNative dlg = new(
+					"Open files", null,
+					Gtk.FileChooserAction.Open, "Open", "Cancel");
+
+				dlg.SelectMultiple = true; // Allow multiple folder selection
+
+				if (dlg.Run() == (int)Gtk.ResponseType.Accept)
+				{
+					result = dlg.Filenames;
+				}
+				else
+				{
+					result = null; // User canceled the dialog
+				}
+			}
+			finally
+			{
+				Gtk.Application.Quit(); // stops the main loop
+			}
+
+			return Task.FromResult(result);
 		}
-		return [path];
+		else
+		{
+			// Fallback
+			return Task.FromResult<string[]?>(null);
+		}
 	}
 }
