@@ -7,11 +7,6 @@ namespace AssetRipper.NativeDialogs;
 
 public static class SaveFileDialog
 {
-	public static bool Supported =>
-		OperatingSystem.IsWindows() ||
-		OperatingSystem.IsMacOS() ||
-		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
-
 	public static Task<string?> SaveFile()
 	{
 		if (OperatingSystem.IsWindows())

@@ -6,11 +6,6 @@ namespace AssetRipper.NativeDialogs;
 
 public static class ConfirmationDialog
 {
-	public static bool Supported =>
-		OperatingSystem.IsWindows() ||
-		OperatingSystem.IsMacOS() ||
-		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
-
 	public static Task<bool?> Confirm(string message, string trueLabel, string falseLabel)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(message);

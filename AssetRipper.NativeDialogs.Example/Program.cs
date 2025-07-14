@@ -10,6 +10,12 @@ internal static class Program
 			return;
 		}
 
+		if (!NativeDialog.Supported)
+		{
+			Console.WriteLine("Native dialogs are not supported on this platform.");
+			return;
+		}
+
 		if (arguments.OpenFile)
 		{
 			if (arguments.AllowMultiple)

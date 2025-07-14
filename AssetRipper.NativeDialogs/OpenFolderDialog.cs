@@ -6,11 +6,6 @@ namespace AssetRipper.NativeDialogs;
 
 public static class OpenFolderDialog
 {
-	public static bool Supported =>
-		OperatingSystem.IsWindows() ||
-		OperatingSystem.IsMacOS() ||
-		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
-
 	public static Task<string?> OpenFolder()
 	{
 		if (OperatingSystem.IsWindows())
