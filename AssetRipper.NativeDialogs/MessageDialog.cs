@@ -9,19 +9,19 @@ public static class MessageDialog
 		OperatingSystem.IsMacOS() ||
 		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
 
-	public static Task Message(string message, string label)
+	public static Task Message(string message)
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			return MessageWindows();
+			return MessageWindows(message);
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return MessageMacOS();
+			return MessageMacOS(message);
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return MessageLinux();
+			return MessageLinux(message);
 		}
 		else
 		{
@@ -30,19 +30,20 @@ public static class MessageDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task MessageWindows()
+	private unsafe static Task MessageWindows(string message)
 	{
 		return Task.CompletedTask;
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task MessageMacOS()
+	private static Task MessageMacOS(string message)
 	{
-		return Task.CompletedTask;
+		string escapedMessage = ProcessExecutor.EscapeString(message);
+		return ProcessExecutor.TryRun("osascript", "-e", $"display dialog \"{escapedMessage}\"");
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task MessageLinux()
+	private static Task MessageLinux(string message)
 	{
 		if (Gtk.Global.IsSupported)
 		{

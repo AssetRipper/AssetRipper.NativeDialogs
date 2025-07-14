@@ -4,6 +4,14 @@ namespace AssetRipper.NativeDialogs;
 
 internal static class ProcessExecutor
 {
+	public static string EscapeString(string str)
+	{
+		return str
+			.Replace("\\", "\\\\")
+			.Replace("\"", "\\\"")
+			.Replace("'", "\\'");
+	}
+
 	public static Task<string?> TryRun(string command, params ReadOnlySpan<string> arguments)
 	{
 		Process p = new()

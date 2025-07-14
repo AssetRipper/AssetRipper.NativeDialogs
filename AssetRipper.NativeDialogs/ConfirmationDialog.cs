@@ -11,17 +11,22 @@ public static class ConfirmationDialog
 
 	public static Task<bool?> Confirm(string message, string trueLabel, string falseLabel)
 	{
+		ArgumentException.ThrowIfNullOrEmpty(message);
+		ArgumentException.ThrowIfNullOrEmpty(trueLabel);
+		ArgumentException.ThrowIfNullOrEmpty(falseLabel);
+		ArgumentOutOfRangeException.ThrowIfEqual(trueLabel, falseLabel);
+
 		if (OperatingSystem.IsWindows())
 		{
-			return ConfirmWindows();
+			return ConfirmWindows(message, trueLabel, falseLabel);
 		}
 		else if (OperatingSystem.IsMacOS())
 		{
-			return ConfirmMacOS();
+			return ConfirmMacOS(message, trueLabel, falseLabel);
 		}
 		else if (OperatingSystem.IsLinux())
 		{
-			return ConfirmLinux();
+			return ConfirmLinux(message, trueLabel, falseLabel);
 		}
 		else
 		{
@@ -30,19 +35,36 @@ public static class ConfirmationDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private unsafe static Task<bool?> ConfirmWindows()
+	private unsafe static Task<bool?> ConfirmWindows(string message, string trueLabel, string falseLabel)
 	{
 		return Task.FromResult<bool?>(null);
 	}
 
 	[SupportedOSPlatform("macos")]
-	private static Task<bool?> ConfirmMacOS()
+	private static async Task<bool?> ConfirmMacOS(string message, string trueLabel, string falseLabel)
 	{
-		return Task.FromResult<bool?>(null);
+		string escapedMessage = ProcessExecutor.EscapeString(message);
+		string escapedTrueLabel = ProcessExecutor.EscapeString(trueLabel);
+		string escapedFalseLabel = ProcessExecutor.EscapeString(falseLabel);
+		string? result = await ProcessExecutor.TryRun("osascript",
+			"-e", $"display dialog \"{escapedMessage}\" buttons {{\"{escapedTrueLabel}\", \"{escapedFalseLabel}\"}} default button \"{escapedTrueLabel}\"",
+			"-e", "button returned of result");
+		if (result == trueLabel)
+		{
+			return true;
+		}
+		else if (result == falseLabel)
+		{
+			return false;
+		}
+		else
+		{
+			return null; // An error occurred
+		}
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<bool?> ConfirmLinux()
+	private static Task<bool?> ConfirmLinux(string message, string trueLabel, string falseLabel)
 	{
 		if (Gtk.Global.IsSupported)
 		{

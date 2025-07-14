@@ -73,13 +73,13 @@ internal static class Program
 					Console.WriteLine("Cancelled.");
 					break;
 				case null:
-					Console.WriteLine("No response.");
+					Console.WriteLine("Could not be displayed.");
 					break;
 			}
 		}
 		else if (arguments.Message)
 		{
-			await MessageDialog.Message("This is a message dialog.", "OK");
+			await MessageDialog.Message("This is a message dialog.");
 			Console.WriteLine("Message dialog displayed.");
 		}
 		else

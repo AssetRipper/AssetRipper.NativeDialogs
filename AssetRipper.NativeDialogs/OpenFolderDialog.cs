@@ -82,13 +82,22 @@ public static class OpenFolderDialog
 	[SupportedOSPlatform("macos")]
 	private static async Task<string[]?> OpenFoldersMacOS()
 	{
-		// Todo: proper Mac implementation
-		string? path = await OpenFolder();
-		if (string.IsNullOrEmpty(path))
+		ReadOnlySpan<string> arguments =
+		[
+			"-e", "set theFolders to choose folder with multiple selections allowed",
+			"-e", "set folderPaths to {}",
+			"-e", "repeat with aFolder in theFolders",
+			"-e", "set end of folderPaths to POSIX path of aFolder",
+			"-e", "end repeat",
+			"-e", "set text item delimiters to \":\"",
+			"-e", "return folderPaths as string",
+		];
+		string? output = await ProcessExecutor.TryRun("osascript", arguments);
+		if (string.IsNullOrEmpty(output))
 		{
 			return null; // User canceled the dialog
 		}
-		return [path];
+		return output.Split(':');
 	}
 
 	[SupportedOSPlatform("linux")]

@@ -72,7 +72,7 @@ public static class SaveFileDialog
 	[SupportedOSPlatform("macos")]
 	private static Task<string?> SaveFileMacOS()
 	{
-		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose file)");
+		return ProcessExecutor.TryRun("osascript", "-e", "POSIX path of (choose file name with prompt \"Save file as:\")");
 	}
 
 	[SupportedOSPlatform("linux")]
