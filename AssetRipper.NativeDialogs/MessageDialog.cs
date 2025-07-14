@@ -83,7 +83,7 @@ public static class MessageDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.MessageDialog md = new(
 				null,

@@ -123,7 +123,7 @@ public static class OpenFolderDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string? result;
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.FileChooserNative dlg = new(
 				"Open a folder", null,
@@ -206,7 +206,7 @@ public static class OpenFolderDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string[]? result;
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.FileChooserNative dlg = new(
 				"Open folders", null,

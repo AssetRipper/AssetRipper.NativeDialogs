@@ -76,7 +76,7 @@ public static class SaveFileDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string? result;
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.FileChooserNative dlg = new(
 				"Save a file", null,

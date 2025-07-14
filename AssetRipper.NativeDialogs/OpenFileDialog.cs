@@ -74,7 +74,7 @@ public static class OpenFileDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string? result;
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.FileChooserNative dlg = new(
 				"Open a file", null,
@@ -197,7 +197,7 @@ public static class OpenFileDialog
 		if (Gtk.Global.IsSupported)
 		{
 			string[]? result;
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.FileChooserNative dlg = new(
 				"Open files", null,

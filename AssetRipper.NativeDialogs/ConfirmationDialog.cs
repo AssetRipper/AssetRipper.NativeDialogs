@@ -116,7 +116,7 @@ public static class ConfirmationDialog
 		if (Gtk.Global.IsSupported)
 		{
 			bool? result;
-			Gtk.Application.Init();
+			GtkHelper.EnsureInitialized();
 
 			using Gtk.MessageDialog md = new(
 				null,
