@@ -141,7 +141,7 @@ public static class OpenFolderDialog
 			}
 			finally
 			{
-				Gtk.Application.Quit(); // stops the main loop
+				//Gtk.Application.Quit(); // stops the main loop
 			}
 
 			return Task.FromResult(result);
@@ -232,7 +232,7 @@ public static class OpenFolderDialog
 			}
 			finally
 			{
-				Gtk.Application.Quit(); // stops the main loop
+				//Gtk.Application.Quit(); // stops the main loop
 			}
 
 			return Task.FromResult(result);

@@ -92,7 +92,7 @@ public static class OpenFileDialog
 			}
 			finally
 			{
-				Gtk.Application.Quit(); // stops the main loop
+				//Gtk.Application.Quit(); // stops the main loop
 			}
 
 			return Task.FromResult(result);
@@ -223,7 +223,7 @@ public static class OpenFileDialog
 			}
 			finally
 			{
-				Gtk.Application.Quit(); // stops the main loop
+				//Gtk.Application.Quit(); // stops the main loop
 			}
 
 			return Task.FromResult(result);
