@@ -80,33 +80,35 @@ public static class OpenFolderDialog
 
 		// Create the FileOpenDialog object.
 		hr = Windows.CoCreateInstance(&CLSID_FileOpenDialog, null, (uint)CLSCTX.CLSCTX_INPROC_SERVER, &IID_IFileOpenDialog, (void**)&pFileDialog);
+		if (!Windows.SUCCEEDED(hr))
+		{
+			return null;
+		}
+
+		// Set the options on the dialog.
+		uint dwOptions;
+		pFileDialog->GetOptions(&dwOptions);
+		pFileDialog->SetOptions(dwOptions | (uint)FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS | (uint)FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM);
+
+		// Show the dialog
+		hr = pFileDialog->Show(default);
 		if (Windows.SUCCEEDED(hr))
 		{
-			// Set the options on the dialog.
-			uint dwOptions;
-			pFileDialog->GetOptions(&dwOptions);
-			pFileDialog->SetOptions(dwOptions | (uint)FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS | (uint)FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM);
-
-			// Show the dialog
-			hr = pFileDialog->Show(default);
+			IShellItem* pItem;
+			hr = pFileDialog->GetResult(&pItem);
 			if (Windows.SUCCEEDED(hr))
 			{
-				IShellItem* pItem;
-				hr = pFileDialog->GetResult(&pItem);
+				char* pszFilePath = null;
+				hr = pItem->GetDisplayName(SIGDN.SIGDN_FILESYSPATH, &pszFilePath);
 				if (Windows.SUCCEEDED(hr))
 				{
-					char* pszFilePath = null;
-					hr = pItem->GetDisplayName(SIGDN.SIGDN_FILESYSPATH, &pszFilePath);
-					if (Windows.SUCCEEDED(hr))
-					{
-						result = new string(pszFilePath);
-						Windows.CoTaskMemFree(pszFilePath);
-					}
-					pItem->Release();
+					result = new string(pszFilePath);
+					Windows.CoTaskMemFree(pszFilePath);
 				}
+				pItem->Release();
 			}
-			pFileDialog->Release();
 		}
+		pFileDialog->Release();
 
 		return result;
 	}
@@ -168,15 +170,105 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("windows")]
-	private static async Task<string[]?> OpenFoldersWindows()
+	private static Task<string[]?> OpenFoldersWindows()
 	{
-		// Todo: proper Windows implementation
-		string? path = await OpenFolder();
-		if (string.IsNullOrEmpty(path))
+		TaskCompletionSource<string[]?> tcs = new();
+
+		Thread thread = new(() =>
 		{
-			return null; // User canceled the dialog
+			try
+			{
+				// Run the STA work
+				Debug.Assert(OperatingSystem.IsWindows());
+				string[]? result = OpenFoldersWindowsInternal();
+
+				// Mark task complete
+				tcs.SetResult(result);
+			}
+			catch (Exception ex)
+			{
+				tcs.SetException(ex);
+			}
+		});
+		thread.SetApartmentState(ApartmentState.STA);
+		thread.Start();
+
+		return tcs.Task;
+	}
+
+	[SupportedOSPlatform("windows")]
+	private unsafe static string[]? OpenFoldersWindowsInternal()
+	{
+		HRESULT hr = Windows.CoInitializeEx(null, (uint)COINIT.COINIT_APARTMENTTHREADED);
+		switch (hr.Value)
+		{
+			case S.S_OK:
+				Windows.CoUninitialize();
+				throw new InvalidOperationException("CoInitializeEx failed with S_OK, which should never happen because .NET is supposed to initialize the thread.");
+			case S.S_FALSE:
+				// The thread is already initialized, which is expected.
+				break;
+			case RPC.RPC_E_CHANGED_MODE:
+				// The thread is already initialized with a different mode, which is unexpected.
+				throw new InvalidOperationException("CoInitializeEx failed with RPC_E_CHANGED_MODE, which should never happen because we only call this method in STA threads.");
 		}
-		return [path];
+
+		IFileOpenDialog* pFileDialog = null;
+
+		// Assign the CLSID and IID for the FileOpenDialog.
+		Guid CLSID_FileOpenDialog = new("DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7");
+		Guid IID_IFileOpenDialog = new("D57C7288-D4AD-4768-BE02-9D969532D960");
+
+		// Create the FileOpenDialog object.
+		hr = Windows.CoCreateInstance(&CLSID_FileOpenDialog, null, (uint)CLSCTX.CLSCTX_INPROC_SERVER, &IID_IFileOpenDialog, (void**)&pFileDialog);
+		if (!Windows.SUCCEEDED(hr))
+		{
+			return null;
+		}
+
+		// Set the options on the dialog.
+		uint dwOptions = default;
+		pFileDialog->GetOptions(&dwOptions);
+		pFileDialog->SetOptions(dwOptions | (uint)FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS | (uint)FILEOPENDIALOGOPTIONS.FOS_ALLOWMULTISELECT | (uint)FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM);
+
+		string[]? result = null;
+
+		// Show the dialog
+		hr = pFileDialog->Show(default);
+		if (Windows.SUCCEEDED(hr))
+		{
+			IShellItemArray* pItemArray;
+			hr = pFileDialog->GetResults(&pItemArray);
+			if (Windows.SUCCEEDED(hr))
+			{
+				uint itemCount = default;
+				pItemArray->GetCount(&itemCount);
+				if (itemCount > 0)
+				{
+					result = new string[itemCount];
+					for (uint i = 0; i < itemCount; i++)
+					{
+						IShellItem* pItem;
+						hr = pItemArray->GetItemAt(i, &pItem);
+						if (Windows.SUCCEEDED(hr))
+						{
+							char* pszFilePath = null;
+							hr = pItem->GetDisplayName(SIGDN.SIGDN_FILESYSPATH, &pszFilePath);
+							if (Windows.SUCCEEDED(hr))
+							{
+								result[i] = new string(pszFilePath);
+								Windows.CoTaskMemFree(pszFilePath);
+							}
+							pItem->Release();
+						}
+					}
+				}
+				pItemArray->Release();
+			}
+		}
+		pFileDialog->Release();
+
+		return result;
 	}
 
 	[SupportedOSPlatform("macos")]
