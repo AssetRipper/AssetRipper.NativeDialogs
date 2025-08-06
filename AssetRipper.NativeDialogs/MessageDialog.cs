@@ -83,8 +83,25 @@ public static class MessageDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			GtkHelper.EnsureInitialized();
+			return MessageLinuxGtk(options);
+		}
+		else
+		{
+			// Fallback
+			return Task.CompletedTask;
+		}
+	}
 
+	[SupportedOSPlatform("linux")]
+	private static async Task MessageLinuxGtk(Options options)
+	{
+		while (!GtkHelper.TryInitialize())
+		{
+			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
+		}
+
+		try
+		{
 			using Gtk.MessageDialog md = new(
 				null,
 				Gtk.DialogFlags.Modal,
@@ -93,13 +110,10 @@ public static class MessageDialog
 				options.Message
 			);
 			md.Run();
-
-			return Task.CompletedTask;
 		}
-		else
+		finally
 		{
-			// Fallback
-			return Task.CompletedTask;
+			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
 		}
 	}
 }

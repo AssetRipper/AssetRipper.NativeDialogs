@@ -115,9 +115,26 @@ public static class ConfirmationDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			bool? result;
-			GtkHelper.EnsureInitialized();
+			return ConfirmLinuxGtk(options);
+		}
+		else
+		{
+			// Fallback
+			return Task.FromResult<bool?>(null);
+		}
+	}
 
+	[SupportedOSPlatform("linux")]
+	private static async Task<bool?> ConfirmLinuxGtk(Options options)
+	{
+		bool? result;
+		while (!GtkHelper.TryInitialize())
+		{
+			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
+		}
+
+		try
+		{
 			using Gtk.MessageDialog md = new(
 				null,
 				Gtk.DialogFlags.Modal,
@@ -133,13 +150,12 @@ public static class ConfirmationDialog
 				(int)Gtk.ResponseType.Cancel or (int)Gtk.ResponseType.No => false,
 				_ => throw new($"Unexpected response type: {response}"),
 			};
-
-			return Task.FromResult(result);
 		}
-		else
+		finally
 		{
-			// Fallback
-			return Task.FromResult<bool?>(null);
+			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
 		}
+
+		return result;
 	}
 }

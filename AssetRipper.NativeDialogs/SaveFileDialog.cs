@@ -75,9 +75,26 @@ public static class SaveFileDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			string? result;
-			GtkHelper.EnsureInitialized();
+			return SaveFileLinuxGtk();
+		}
+		else
+		{
+			// Fallback
+			return Task.FromResult<string?>(null);
+		}
+	}
 
+	[SupportedOSPlatform("linux")]
+	private static async Task<string?> SaveFileLinuxGtk()
+	{
+		string? result;
+		while (!GtkHelper.TryInitialize())
+		{
+			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
+		}
+
+		try
+		{
 			using Gtk.FileChooserNative dlg = new(
 				"Save a file", null,
 				Gtk.FileChooserAction.Save, "Save", "Cancel");
@@ -90,13 +107,12 @@ public static class SaveFileDialog
 			{
 				result = null; // User canceled the dialog
 			}
-
-			return Task.FromResult(result);
 		}
-		else
+		finally
 		{
-			// Fallback
-			return Task.FromResult<string?>(null);
+			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
 		}
+
+		return result;
 	}
 }

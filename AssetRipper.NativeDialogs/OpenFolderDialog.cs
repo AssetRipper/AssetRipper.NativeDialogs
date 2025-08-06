@@ -124,11 +124,30 @@ public static class OpenFolderDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			string? result;
-			GtkHelper.EnsureInitialized();
+			return OpenFolderLinuxGtk();
+		}
+		else
+		{
+			// Fallback
+			return Task.FromResult<string?>(null);
+		}
+	}
 
+	[SupportedOSPlatform("linux")]
+	private static async Task<string?> OpenFolderLinuxGtk()
+	{
+		Debug.Assert(Gtk.Global.IsSupported);
+
+		string? result;
+		while (!GtkHelper.TryInitialize())
+		{
+			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
+		}
+
+		try
+		{
 			using Gtk.FileChooserNative dlg = new(
-				"Open a folder", null,
+				"Open folder", null,
 				Gtk.FileChooserAction.SelectFolder, "Open", "Cancel");
 
 			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
@@ -139,14 +158,13 @@ public static class OpenFolderDialog
 			{
 				result = null; // User canceled the dialog
 			}
-
-			return Task.FromResult(result);
 		}
-		else
+		finally
 		{
-			// Fallback
-			return Task.FromResult<string?>(null);
+			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
 		}
+
+		return result;
 	}
 
 	public static Task<string[]?> OpenFolders()
@@ -297,9 +315,28 @@ public static class OpenFolderDialog
 	{
 		if (Gtk.Global.IsSupported)
 		{
-			string[]? result;
-			GtkHelper.EnsureInitialized();
+			return OpenFoldersLinuxGtk();
+		}
+		else
+		{
+			// Fallback
+			return Task.FromResult<string[]?>(null);
+		}
+	}
 
+	[SupportedOSPlatform("linux")]
+	private static async Task<string[]?> OpenFoldersLinuxGtk()
+	{
+		Debug.Assert(Gtk.Global.IsSupported);
+
+		string[]? result;
+		while (!GtkHelper.TryInitialize())
+		{
+			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
+		}
+
+		try
+		{
 			using Gtk.FileChooserNative dlg = new(
 				"Open folders", null,
 				Gtk.FileChooserAction.SelectFolder, "Open", "Cancel");
@@ -314,13 +351,12 @@ public static class OpenFolderDialog
 			{
 				result = null; // User canceled the dialog
 			}
-
-			return Task.FromResult(result);
 		}
-		else
+		finally
 		{
-			// Fallback
-			return Task.FromResult<string[]?>(null);
+			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
 		}
+
+		return result;
 	}
 }
