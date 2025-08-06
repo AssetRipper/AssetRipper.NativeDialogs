@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
+  publish_example:
     runs-on: ${{ matrix.config.os }}
 
     strategy:
@@ -60,4 +60,58 @@ jobs:
             ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dll
             ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.so
             ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dylib
+          if-no-files-found: error
+
+  publish_web_api:
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      matrix:
+        config:
+          - { name: win_x64, os: windows-latest, runtime: win-x64, executable: AssetRipper.NativeDialogs.WebApi.exe }
+          - { name: win_arm64, os: windows-latest, runtime: win-arm64, executable: AssetRipper.NativeDialogs.WebApi.exe }
+          - { name: linux_x64, os: ubuntu-22.04, runtime: linux-x64, executable: AssetRipper.NativeDialogs.WebApi }
+          - { name: linux_arm64, os: ubuntu-22.04, runtime: linux-arm64, executable: AssetRipper.NativeDialogs.WebApi }
+          - { name: mac_x64, os: macos-latest, runtime: osx-x64, executable: AssetRipper.NativeDialogs.WebApi }
+          - { name: mac_arm64, os: macos-latest, runtime: osx-arm64, executable: AssetRipper.NativeDialogs.WebApi }
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      # https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/cross-compile#linux
+      - name: Install Arm64 Dependencies
+        if: matrix.config.runtime == 'linux-arm64'
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo bash -c 'cat > /etc/apt/sources.list.d/arm64.list <<EOF
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse
+          EOF'
+          sudo sed -i -e 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
+          sudo sed -i -e 's/deb mirror/deb [arch=amd64] mirror/g' /etc/apt/sources.list
+          sudo apt update
+          sudo apt install -y clang llvm binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu zlib1g-dev:arm64
+
+      - name: Publish
+        run: dotnet publish -c Release -r ${{ matrix.config.runtime }}
+        working-directory: ./AssetRipper.NativeDialogs.WebApi/
+
+      - name: List Files
+        shell: bash
+        run: ls -R ./AssetRipper.NativeDialogs.WebApi/bin/Release/
+        
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebApi_${{ matrix.config.name }}
+          path: |
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dll
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.so
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dylib
           if-no-files-found: error
