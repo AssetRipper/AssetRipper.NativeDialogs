@@ -15,13 +15,13 @@ public static class Program
 
 		WebApplication app = builder.Build();
 
-		app.MapGet("/", () => Task.FromResult<string?>("Welcome to the AssetRipper Native Dialogs Web API!"));
-		app.MapGet("/open-file", OpenFileDialog.OpenFile);
-		app.MapGet("/open-files", OpenFileDialog.OpenFiles);
-		app.MapGet("/open-folder", OpenFolderDialog.OpenFolder);
-		app.MapGet("/open-folders", OpenFolderDialog.OpenFolders);
-		app.MapGet("/save-file", SaveFileDialog.SaveFile);
-		app.MapGet("/confirm", static async Task<string?> () =>
+		app.MapGetFunction("/", () => Task.FromResult<string?>("Welcome to the AssetRipper Native Dialogs Web API!"));
+		app.MapGetFunction("/open-file", OpenFileDialog.OpenFile);
+		app.MapGetFunction("/open-files", OpenFileDialog.OpenFiles);
+		app.MapGetFunction("/open-folder", OpenFolderDialog.OpenFolder);
+		app.MapGetFunction("/open-folders", OpenFolderDialog.OpenFolders);
+		app.MapGetFunction("/save-file", SaveFileDialog.SaveFile);
+		app.MapGetFunction("/confirm", static async Task<string?> () =>
 		{
 			bool? result = await ConfirmationDialog.Confirm(new() { Message = "Do you acknowledge?", Type = ConfirmationDialog.Type.YesNo });
 			return result switch
@@ -31,7 +31,7 @@ public static class Program
 				null => "User canceled the dialog."
 			};
 		});
-		app.MapGet("/message", static async Task<string?> () =>
+		app.MapGetFunction("/message", static async Task<string?> () =>
 		{
 			await MessageDialog.Message("Hello, World!");
 			return "Message dialog shown.";
@@ -45,7 +45,7 @@ public static class Program
 		response.Headers.CacheControl = "no-store, max-age=0";
 	}
 
-	private static void MapGet(this WebApplication app, [StringSyntax("Route")] string path, Func<Task<string?>> func)
+	private static void MapGetFunction(this WebApplication app, [StringSyntax("Route")] string path, Func<Task<string?>> func)
 	{
 		app.MapGet(path, async (context) =>
 		{
@@ -54,7 +54,7 @@ public static class Program
 		});
 	}
 
-	private static void MapGet(this WebApplication app, [StringSyntax("Route")] string path, Func<Task<string[]?>> func)
+	private static void MapGetFunction(this WebApplication app, [StringSyntax("Route")] string path, Func<Task<string[]?>> func)
 	{
 		app.MapGet(path, async (context) =>
 		{
