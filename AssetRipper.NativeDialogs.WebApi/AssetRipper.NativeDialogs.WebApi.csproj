@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+  	<PackageReference Include="Microsoft.DotNet.ILCompiler" Version="9.0.8" />
 		<ProjectReference Include="..\AssetRipper.NativeDialogs\AssetRipper.NativeDialogs.csproj" />
 	</ItemGroup>
 
