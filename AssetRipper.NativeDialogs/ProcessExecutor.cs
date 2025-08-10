@@ -42,13 +42,13 @@ internal static class ProcessExecutor
 				}
 			};
 
-			process.BeginOutputReadLine();
-			process.BeginErrorReadLine();
-
 			if (!process.Start())
 			{
 				return null;
 			}
+
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
 
 			await process.WaitForExitAsync();
 

@@ -141,13 +141,13 @@ public static class ConfirmationDialog
 				process.StartInfo.ArgumentList.Add(escapedFalseLabel);
 			}
 
-			process.BeginOutputReadLine();
-			process.BeginErrorReadLine();
-
 			if (!process.Start())
 			{
 				return null; // Failed to start the process
 			}
+
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
 
 			await process.WaitForExitAsync();
 
@@ -173,13 +173,13 @@ public static class ConfirmationDialog
 			process.StartInfo.ArgumentList.Add(options.Type is Type.YesNo ? "--yesno" : "--okcancel");
 			process.StartInfo.ArgumentList.Add(escapedMessage);
 
-			process.BeginOutputReadLine();
-			process.BeginErrorReadLine();
-
 			if (!process.Start())
 			{
 				return null; // Failed to start the process
 			}
+
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
 
 			await process.WaitForExitAsync();
 
