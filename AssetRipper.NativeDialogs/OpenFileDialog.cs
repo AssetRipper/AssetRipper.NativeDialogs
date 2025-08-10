@@ -70,51 +70,21 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> OpenFileLinux()
+	private static async Task<string?> OpenFileLinux()
 	{
-		if (Gtk.Global.IsSupported)
+		if (await LinuxHelper.HasZenity())
 		{
-			return OpenFileLinuxGtk();
+			return await ProcessExecutor.TryRun("zenity", "--file-selection");
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			return await ProcessExecutor.TryRun("kdialog", "--getopenfilename");
 		}
 		else
 		{
 			// Fallback
-			return Task.FromResult<string?>(null);
+			return null;
 		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task<string?> OpenFileLinuxGtk()
-	{
-		Debug.Assert(Gtk.Global.IsSupported);
-
-		string? result;
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.FileChooserNative dlg = new(
-				"Open a file", null,
-				Gtk.FileChooserAction.Open, "Open", "Cancel");
-
-			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-			{
-				result = dlg.Filename;
-			}
-			else
-			{
-				result = null; // User canceled the dialog
-			}
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
-		}
-
-		return result;
 	}
 
 	public static Task<string[]?> OpenFiles()
@@ -211,52 +181,30 @@ public static class OpenFileDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string[]?> OpenFilesLinux()
+	private static async Task<string[]?> OpenFilesLinux()
 	{
-		if (Gtk.Global.IsSupported)
+		if (await LinuxHelper.HasZenity())
 		{
-			return OpenFilesLinuxGtk();
+			string? output = await ProcessExecutor.TryRun("zenity", "--file-selection", "--multiple");
+			if (string.IsNullOrEmpty(output))
+			{
+				return null; // User canceled the dialog
+			}
+			return output.Split('|');
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			string? output = await ProcessExecutor.TryRun("kdialog", "--getopenfilenames");
+			if (string.IsNullOrEmpty(output))
+			{
+				return null; // User canceled the dialog
+			}
+			return output.Split('\n');
 		}
 		else
 		{
 			// Fallback
-			return Task.FromResult<string[]?>(null);
+			return null;
 		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFilesLinuxGtk()
-	{
-		Debug.Assert(Gtk.Global.IsSupported);
-
-		string[]? result;
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.FileChooserNative dlg = new(
-				"Open files", null,
-				Gtk.FileChooserAction.Open, "Open", "Cancel");
-
-			dlg.SelectMultiple = true; // Allow multiple folder selection
-
-			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-			{
-				result = dlg.Filenames;
-			}
-			else
-			{
-				result = null; // User canceled the dialog
-			}
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
-		}
-
-		return result;
 	}
 }

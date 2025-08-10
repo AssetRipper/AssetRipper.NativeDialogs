@@ -120,51 +120,21 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> OpenFolderLinux()
+	private static async Task<string?> OpenFolderLinux()
 	{
-		if (Gtk.Global.IsSupported)
+		if (await LinuxHelper.HasZenity())
 		{
-			return OpenFolderLinuxGtk();
+			return await ProcessExecutor.TryRun("zenity", "--file-selection", "--directory");
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			return await ProcessExecutor.TryRun("kdialog", "--getexistingdirectory");
 		}
 		else
 		{
 			// Fallback
-			return Task.FromResult<string?>(null);
+			return null;
 		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task<string?> OpenFolderLinuxGtk()
-	{
-		Debug.Assert(Gtk.Global.IsSupported);
-
-		string? result;
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.FileChooserNative dlg = new(
-				"Open folder", null,
-				Gtk.FileChooserAction.SelectFolder, "Open", "Cancel");
-
-			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-			{
-				result = dlg.Filename;
-			}
-			else
-			{
-				result = null; // User canceled the dialog
-			}
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
-		}
-
-		return result;
 	}
 
 	public static Task<string[]?> OpenFolders()
@@ -311,52 +281,27 @@ public static class OpenFolderDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string[]?> OpenFoldersLinux()
+	private static async Task<string[]?> OpenFoldersLinux()
 	{
-		if (Gtk.Global.IsSupported)
+		if (await LinuxHelper.HasZenity())
 		{
-			return OpenFoldersLinuxGtk();
+			string? output = await ProcessExecutor.TryRun("zenity", "--file-selection", "--directory", "--multiple");
+			if (string.IsNullOrEmpty(output))
+			{
+				return null; // User canceled the dialog
+			}
+			return output.Split('|');
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			// KDialog does not support selecting multiple directories, so we can only select one.
+			string? path = await OpenFolderLinux();
+			return string.IsNullOrEmpty(path) ? null : [path];
 		}
 		else
 		{
 			// Fallback
-			return Task.FromResult<string[]?>(null);
+			return null;
 		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task<string[]?> OpenFoldersLinuxGtk()
-	{
-		Debug.Assert(Gtk.Global.IsSupported);
-
-		string[]? result;
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.FileChooserNative dlg = new(
-				"Open folders", null,
-				Gtk.FileChooserAction.SelectFolder, "Open", "Cancel");
-
-			dlg.SelectMultiple = true; // Allow multiple folder selection
-
-			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-			{
-				result = dlg.Filenames;
-			}
-			else
-			{
-				result = null; // User canceled the dialog
-			}
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
-		}
-
-		return result;
 	}
 }

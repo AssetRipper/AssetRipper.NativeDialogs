@@ -2,8 +2,12 @@
 
 public static class NativeDialog
 {
-	public static bool Supported =>
-		OperatingSystem.IsWindows() ||
-		OperatingSystem.IsMacOS() ||
-		(OperatingSystem.IsLinux() && Gtk.Global.IsSupported);
+	private static bool SupportedLinux { get; } = OperatingSystem.IsLinux() && LinuxHelper.HasSupportedBackend().WaitForResult();
+	public static bool Supported => OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() || (OperatingSystem.IsLinux() && SupportedLinux);
+
+	private static T WaitForResult<T>(this Task<T> task)
+	{
+		task.Wait();
+		return task.Result;
+	}
 }

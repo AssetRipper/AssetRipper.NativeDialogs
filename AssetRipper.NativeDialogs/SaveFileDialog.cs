@@ -71,48 +71,20 @@ public static class SaveFileDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<string?> SaveFileLinux()
+	private static async Task<string?> SaveFileLinux()
 	{
-		if (Gtk.Global.IsSupported)
+		if (await LinuxHelper.HasZenity())
 		{
-			return SaveFileLinuxGtk();
+			return await ProcessExecutor.TryRun("zenity", "--file-selection", "--save");
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			return await ProcessExecutor.TryRun("kdialog", "--getsavefilename");
 		}
 		else
 		{
 			// Fallback
-			return Task.FromResult<string?>(null);
+			return null;
 		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task<string?> SaveFileLinuxGtk()
-	{
-		string? result;
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.FileChooserNative dlg = new(
-				"Save a file", null,
-				Gtk.FileChooserAction.Save, "Save", "Cancel");
-
-			if (dlg.Run() == (int)Gtk.ResponseType.Accept)
-			{
-				result = dlg.Filename;
-			}
-			else
-			{
-				result = null; // User canceled the dialog
-			}
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
-		}
-
-		return result;
 	}
 }

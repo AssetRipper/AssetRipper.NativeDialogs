@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using TerraFX.Interop.Windows;
@@ -111,51 +112,88 @@ public static class ConfirmationDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task<bool?> ConfirmLinux(Options options)
+	private static async Task<bool?> ConfirmLinux(Options options)
 	{
-		if (Gtk.Global.IsSupported)
+		string escapedMessage = ProcessExecutor.EscapeString(options.Message);
+		if (await LinuxHelper.HasZenity())
 		{
-			return ConfirmLinuxGtk(options);
+			Process process = new()
+			{
+				StartInfo = new()
+				{
+					FileName = "zenity",
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+				},
+			};
+
+			process.StartInfo.ArgumentList.Add("--question");
+			process.StartInfo.ArgumentList.Add("--text");
+			process.StartInfo.ArgumentList.Add(escapedMessage);
+			if (options.Type != Type.YesNo)
+			{
+				string escapedTrueLabel = ProcessExecutor.EscapeString(options.TrueLabel);
+				string escapedFalseLabel = ProcessExecutor.EscapeString(options.FalseLabel);
+
+				process.StartInfo.ArgumentList.Add("--ok-label");
+				process.StartInfo.ArgumentList.Add(escapedTrueLabel);
+				process.StartInfo.ArgumentList.Add("--cancel-label");
+				process.StartInfo.ArgumentList.Add(escapedFalseLabel);
+			}
+
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
+
+			if (!process.Start())
+			{
+				return null; // Failed to start the process
+			}
+
+			await process.WaitForExitAsync();
+
+			return process.ExitCode switch
+			{
+				0 => true, // User clicked OK or Yes
+				1 => false, // User clicked Cancel or No
+				_ => null, // An error occurred
+			};
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			Process process = new()
+			{
+				StartInfo = new()
+				{
+					FileName = "kdialog",
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+				},
+			};
+
+			process.StartInfo.ArgumentList.Add(options.Type is Type.YesNo ? "--yesno" : "--okcancel");
+			process.StartInfo.ArgumentList.Add(escapedMessage);
+
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
+
+			if (!process.Start())
+			{
+				return null; // Failed to start the process
+			}
+
+			await process.WaitForExitAsync();
+
+			return process.ExitCode switch
+			{
+				0 => true, // User clicked OK or Yes
+				1 => false, // User clicked Cancel or No
+				_ => null, // An error occurred
+			};
 		}
 		else
 		{
 			// Fallback
-			return Task.FromResult<bool?>(null);
+			return null;
 		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task<bool?> ConfirmLinuxGtk(Options options)
-	{
-		bool? result;
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.MessageDialog md = new(
-				null,
-				Gtk.DialogFlags.Modal,
-				Gtk.MessageType.Info,
-				options.Type == Type.OkCancel ? Gtk.ButtonsType.OkCancel : Gtk.ButtonsType.YesNo,
-				options.Message
-			);
-
-			int response = md.Run();
-			result = response switch
-			{
-				(int)Gtk.ResponseType.Ok or (int)Gtk.ResponseType.Yes => true,
-				(int)Gtk.ResponseType.Cancel or (int)Gtk.ResponseType.No => false,
-				_ => throw new($"Unexpected response type: {response}"),
-			};
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
-		}
-
-		return result;
 	}
 }

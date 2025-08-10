@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Runtime.Versioning;
+using System.Text;
 
 namespace AssetRipper.NativeDialogs;
 
@@ -31,16 +33,35 @@ internal static class ProcessExecutor
 
 		static async Task<string?> TryRunProcess(Process process)
 		{
+			StringBuilder output = new();
+			process.OutputDataReceived += (sender, e) =>
+			{
+				if (e.Data != null)
+				{
+					output.AppendLine(e.Data);
+				}
+			};
+
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
+
 			if (!process.Start())
 			{
 				return null;
 			}
 
-			string? path = process.StandardOutput.ReadLine();
-
 			await process.WaitForExitAsync();
 
-			return process.ExitCode == 0 ? path : null;
+			string result = output.ToString().Trim();
+
+			return process.ExitCode == 0 && result.Length > 0 ? result : null;
 		}
+	}
+
+	[SupportedOSPlatform("linux")]
+	public static async Task<bool> HasCommand(string command)
+	{
+		string? result = await TryRun("/bin/bash", "-c", $"command -v {EscapeString(command)}");
+		return !string.IsNullOrEmpty(result);
 	}
 }

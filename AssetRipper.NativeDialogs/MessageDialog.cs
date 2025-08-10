@@ -79,41 +79,20 @@ public static class MessageDialog
 	}
 
 	[SupportedOSPlatform("linux")]
-	private static Task MessageLinux(Options options)
+	private static async Task MessageLinux(Options options)
 	{
-		if (Gtk.Global.IsSupported)
+		string escapedMessage = ProcessExecutor.EscapeString(options.Message);
+		if (await LinuxHelper.HasZenity())
 		{
-			return MessageLinuxGtk(options);
+			await ProcessExecutor.TryRun("zenity", "--info", "--text", escapedMessage);
+		}
+		else if (await LinuxHelper.HasKDialog())
+		{
+			await ProcessExecutor.TryRun("kdialog", "--msgbox", escapedMessage);
 		}
 		else
 		{
-			// Fallback
-			return Task.CompletedTask;
-		}
-	}
-
-	[SupportedOSPlatform("linux")]
-	private static async Task MessageLinuxGtk(Options options)
-	{
-		while (!GtkHelper.TryInitialize())
-		{
-			await GtkHelper.Delay(); // Wait for the GTK initialization to complete
-		}
-
-		try
-		{
-			using Gtk.MessageDialog md = new(
-				null,
-				Gtk.DialogFlags.Modal,
-				Gtk.MessageType.Info,
-				Gtk.ButtonsType.Ok,
-				options.Message
-			);
-			md.Run();
-		}
-		finally
-		{
-			GtkHelper.Shutdown(); // Ensure GTK is properly shut down after use
+			// Fallback: do nothing
 		}
 	}
 }
