@@ -22,7 +22,7 @@ jobs:
           - { name: mac_arm64, os: macos-latest, runtime: osx-arm64, executable: AssetRipper.NativeDialogs.Example }
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -76,7 +76,7 @@ jobs:
           - { name: mac_arm64, os: macos-latest, runtime: osx-arm64, executable: AssetRipper.NativeDialogs.WebApi }
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
