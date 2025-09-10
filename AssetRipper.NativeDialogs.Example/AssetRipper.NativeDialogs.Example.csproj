@@ -11,6 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+  	<PackageReference Include="Microsoft.DotNet.ILCompiler" Version="9.0.9" />
 		<ProjectReference Include="..\AssetRipper.NativeDialogs\AssetRipper.NativeDialogs.csproj" />
 	</ItemGroup>
 
