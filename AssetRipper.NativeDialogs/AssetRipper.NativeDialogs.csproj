@@ -11,11 +11,10 @@
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1591</NoWarn>
-		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.2" />
+		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
 	</ItemGroup>
 
 	<ItemGroup>
