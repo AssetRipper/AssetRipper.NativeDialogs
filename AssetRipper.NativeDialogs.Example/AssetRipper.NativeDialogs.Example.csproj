@@ -5,6 +5,7 @@
 		<PublishAot>true</PublishAot>
 		<CETCompat>false</CETCompat>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
