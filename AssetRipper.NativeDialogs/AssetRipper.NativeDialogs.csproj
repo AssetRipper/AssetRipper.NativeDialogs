@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CETCompat>false</CETCompat>
 
 		<PackageId>AssetRipper.NativeDialogs</PackageId>
 		<PackageTags>C# file</PackageTags>

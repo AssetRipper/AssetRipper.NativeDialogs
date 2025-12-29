@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<PublishAot>true</PublishAot>
+		<CETCompat>false</CETCompat>
 		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
 
