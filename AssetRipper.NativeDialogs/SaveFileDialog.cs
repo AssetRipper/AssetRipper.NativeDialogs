@@ -35,7 +35,7 @@ public static class SaveFileDialog
 		char[] buffer = ArrayPool<char>.Shared.Rent(ushort.MaxValue + 1); // Should be enough for the overwhelming majority of cases.
 		new Span<char>(buffer).Clear();
 
-		string filter = "All Files\0*.*\0\0";
+		string filter = "All Files (*.*)\0*.*\0\0";
 
 		fixed (char* bufferPtr = buffer)
 		fixed (char* filterPtr = filter)
