@@ -26,7 +26,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
 
       # https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/cross-compile#linux
       - name: Install Arm64 Dependencies
@@ -56,10 +56,10 @@ jobs:
         with:
           name: Example_${{ matrix.config.name }}
           path: |
-            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
-            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dll
-            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.so
-            ./AssetRipper.NativeDialogs.Example/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dylib
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/*.dll
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/*.so
+            ./AssetRipper.NativeDialogs.Example/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/*.dylib
           if-no-files-found: error
 
   publish_web_api:
@@ -80,7 +80,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
 
       # https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/cross-compile#linux
       - name: Install Arm64 Dependencies
@@ -110,8 +110,8 @@ jobs:
         with:
           name: WebApi_${{ matrix.config.name }}
           path: |
-            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
-            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dll
-            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.so
-            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net9.0/${{ matrix.config.runtime }}/publish/*.dylib
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/${{ matrix.config.executable }}
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/*.dll
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/*.so
+            ./AssetRipper.NativeDialogs.WebApi/bin/Release/net10.0/${{ matrix.config.runtime }}/publish/*.dylib
           if-no-files-found: error

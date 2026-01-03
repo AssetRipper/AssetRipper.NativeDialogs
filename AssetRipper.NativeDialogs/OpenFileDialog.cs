@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using TerraFX.Interop.Windows;
@@ -37,7 +36,7 @@ public static class OpenFileDialog
 		new Span<char>(buffer).Clear();
 
 		fixed (char* bufferPtr = buffer)
-		fixed (char* filterPtr = "All Files\0*.*\0")
+		fixed (char* filterPtr = "All Files (*.*)\0*.*\0\0")
 		{
 			OPENFILENAMEW ofn = default;
 			ofn.lStructSize = (uint)Unsafe.SizeOf<OPENFILENAMEW>();
@@ -46,7 +45,7 @@ public static class OpenFileDialog
 			ofn.nMaxFile = (uint)buffer.Length;
 			ofn.lpstrFilter = filterPtr;
 			ofn.nFilterIndex = 1; // The first pair of strings has an index value of 1.
-			ofn.Flags = OFN.OFN_PATHMUSTEXIST | OFN.OFN_FILEMUSTEXIST;
+			ofn.Flags = OFN.OFN_PATHMUSTEXIST | OFN.OFN_FILEMUSTEXIST | OFN.OFN_EXPLORER;
 			if (Windows.GetOpenFileNameW(&ofn))
 			{
 				int length = Array.IndexOf(buffer, '\0');
@@ -116,7 +115,7 @@ public static class OpenFileDialog
 		new Span<char>(buffer).Clear();
 
 		fixed (char* bufferPtr = buffer)
-		fixed (char* filterPtr = "All Files\0*.*\0")
+		fixed (char* filterPtr = "All Files (*.*)\0*.*\0\0")
 		{
 			OPENFILENAMEW ofn = default;
 			ofn.lStructSize = (uint)Unsafe.SizeOf<OPENFILENAMEW>();
