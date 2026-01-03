@@ -6,8 +6,8 @@
 		<Nullable>enable</Nullable>
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
 
-		<VersionPrefix>1.0.1</VersionPrefix>
-		<Copyright>Copyright (c) 2025 ds5678</Copyright>
+		<VersionPrefix>1.1.0</VersionPrefix>
+		<Copyright>Copyright (c) 2026 ds5678</Copyright>
 		<Authors>ds5678</Authors>
 		<Company>AssetRipper</Company>
 		<Description>Cross platform library for native file dialogs.</Description>
