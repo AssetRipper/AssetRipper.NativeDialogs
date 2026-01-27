@@ -61,6 +61,11 @@ internal static class ProcessExecutor
 	[SupportedOSPlatform("linux")]
 	public static async Task<bool> HasCommand(string command)
 	{
+		ArgumentException.ThrowIfNullOrEmpty(command);
+		if (!File.Exists("/bin/bash"))
+		{
+			return false;
+		}
 		string? result = await TryRun("/bin/bash", "-c", $"command -v {EscapeString(command)}");
 		return !string.IsNullOrEmpty(result);
 	}
