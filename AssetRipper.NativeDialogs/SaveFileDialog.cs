@@ -42,7 +42,7 @@ public static class SaveFileDialog
 		{
 			OPENFILENAMEW ofn = default;
 			ofn.lStructSize = (uint)Unsafe.SizeOf<OPENFILENAMEW>();
-			ofn.hwndOwner = default; // No owner window.
+			ofn.hwndOwner = Windows.GetConsoleWindow(); // Use console window as owner to ensure dialog comes to foreground
 			ofn.lpstrFile = bufferPtr;
 			ofn.nMaxFile = (uint)buffer.Length;
 			ofn.lpstrFilter = filterPtr;

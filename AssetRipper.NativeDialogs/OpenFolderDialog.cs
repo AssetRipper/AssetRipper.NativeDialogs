@@ -90,8 +90,9 @@ public static class OpenFolderDialog
 		pFileDialog->GetOptions(&dwOptions);
 		pFileDialog->SetOptions(dwOptions | (uint)FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS | (uint)FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM);
 
-		// Show the dialog
-		hr = pFileDialog->Show(default);
+		// Show the dialog with console window as owner to ensure it comes to foreground
+		HWND hwndOwner = Windows.GetConsoleWindow();
+		hr = pFileDialog->Show(hwndOwner);
 		if (Windows.SUCCEEDED(hr))
 		{
 			IShellItem* pItem;
@@ -221,8 +222,9 @@ public static class OpenFolderDialog
 
 		string[]? result = null;
 
-		// Show the dialog
-		hr = pFileDialog->Show(default);
+		// Show the dialog with console window as owner to ensure it comes to foreground
+		HWND hwndOwner = Windows.GetConsoleWindow();
+		hr = pFileDialog->Show(hwndOwner);
 		if (Windows.SUCCEEDED(hr))
 		{
 			IShellItemArray* pItemArray;
